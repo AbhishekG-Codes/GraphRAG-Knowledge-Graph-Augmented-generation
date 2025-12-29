@@ -1,0 +1,125 @@
+.citations {
+  background: #ffffff;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 40px;
+  border-radius: 24px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.citations:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.citations h3 {
+  margin: 0 0 24px 0;
+  color: #1d1d1f;
+  font-size: 21px;
+  font-weight: 600;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  letter-spacing: -0.3px;
+}
+
+.citations.empty {
+  text-align: center;
+  padding: 80px 40px;
+}
+
+.citations-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.citations-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.citations-list::-webkit-scrollbar-track {
+  background: #f5f5f7;
+  border-radius: 10px;
+}
+
+.citations-list::-webkit-scrollbar-thumb {
+  background: #d1d1d6;
+  border-radius: 10px;
+}
+
+.citations-list::-webkit-scrollbar-thumb:hover {
+  background: #86868b;
+}
+
+.citation-item {
+  display: flex;
+  gap: 16px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  background: #f5f5f7;
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.citation-item:hover {
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left-color: #764ba2;
+  transform: translateX(4px);
+}
+
+.citation-number {
+  font-weight: 600;
+  color: #667eea;
+  font-size: 16px;
+  min-width: 32px;
+}
+
+.citation-content {
+  flex: 1;
+}
+
+.citation-content strong {
+  color: #1d1d1f;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.citation-content span {
+  color: #6e6e73;
+  font-size: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.citation-content .page-info {
+  background: rgba(102, 126, 234, 0.15);
+  color: #667eea;
+  padding: 4px 12px;
+  border-radius: 980px;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+
+.empty-message {
+  color: #6e6e73;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.page-info {
+  color: #57606a;
+  font-size: 12px;
+  background: #e1e4e8;
+  padding: 2px 8px;
+  border-radius: 3px;
+  display: inline-block;
+}

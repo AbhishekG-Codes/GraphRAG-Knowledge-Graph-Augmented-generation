@@ -1,0 +1,22 @@
+{
+  "name": "langgraph",
+  "type": "module",
+  "scripts": {
+    "api": "node api-server.js",
+    "ui": "cd ui && npm run dev",
+    "start": "echo 'Run: npm run api (in one terminal) and npm run ui (in another)'"
+  },
+  "dependencies": {
+    "@langchain/core": "^1.1.7",
+    "@langchain/ollama": "^1.1.0",
+    "@langchain/textsplitters": "^1.0.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "langchain": "^1.2.2",
+    "mongodb": "^7.0.0",
+    "neo4j-driver": "^6.0.1",
+    "pdf.js-extract": "^0.2.1",
+    "uuid": "^13.0.0"
+  }
+}
