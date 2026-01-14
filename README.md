@@ -9,11 +9,11 @@ A complete implementation of GraphRAG that combines **semantic vector search** w
 ## 📸 Screenshot
 
 <!-- Add your UI screenshot here -->
-![GraphRAG Explorer UI](./screenshot.png)
+![GraphRAG Explorer UI](assets/screenshot.png)
 
 ---
 
-## Performance Note
+## ⚠️ Performance Note
 
 > **This project uses local LLMs (Ollama) for all AI operations including embeddings and text generation.**
 > 
@@ -21,7 +21,7 @@ A complete implementation of GraphRAG that combines **semantic vector search** w
 
 ---
 
-## What is This?
+## 🎯 What is This?
 
 Traditional RAG (Retrieval-Augmented Generation) retrieves text chunks based on semantic similarity alone. **GraphRAG** enhances this by:
 
@@ -143,7 +143,7 @@ Citations:
 | **LLM** | Ollama (`qwen2.5:7b`) |
 | **Backend** | Node.js + Express |
 | **Frontend** | React + Vite |
-| **PDF Processing** | pdf-parse |
+| **PDF Processing** | pdf.js-extract |
 
 ---
 
@@ -223,15 +223,16 @@ Open http://localhost:5173 to explore!
 
 ```
 langgraph/
-├── data/                    # PDF documents to process
+├── data/                       # PDF documents to process
 ├── src/
 │   ├── database/
 │   │   ├── mongodbClient.js    # Vector storage operations
 │   │   └── neo4jClient.js      # Graph database operations
 │   ├── extraction/
-│   │   └── entityExtractor.js  # LLM-based entity/relation extraction
-│   ├── linking/
-│   │   └── graphVectorLinker.js # Connect graph nodes to chunks
+│   │   ├── entityExtractor.js  # LLM-based entity/relation extraction
+│   │   └── extractionPipeline.js
+│   ├── ingestion/
+│   │   └── ingestPipeline.js   # PDF ingestion pipeline
 │   ├── query/
 │   │   └── queryEngine.js      # Main query orchestration
 │   ├── retrieval/
@@ -240,7 +241,7 @@ langgraph/
 │   └── utils/
 │       ├── pdfProcessor.js     # PDF parsing and chunking
 │       └── embeddingGenerator.js # Ollama embedding wrapper
-├── ui/                      # React frontend
+├── ui/                         # React frontend
 │   ├── src/
 │   │   ├── App.jsx
 │   │   └── components/
@@ -249,7 +250,7 @@ langgraph/
 │   │       ├── GraphVisualization.jsx
 │   │       ├── Citations.jsx
 │   │       └── QueryHistory.jsx
-├── api-server.js            # Express REST API
+├── api-server.js               # Express REST API
 ├── package.json
 └── README.md
 ```
@@ -345,7 +346,7 @@ MIT
 
 ---
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
 - Built with [LangChain.js](https://js.langchain.com/)
 - Powered by [Ollama](https://ollama.ai/) for local LLM inference
