@@ -1,0 +1,86 @@
+% JMLR Style Package (jmlr2e.sty)
+% Simplified version for JMLR submissions
+% Based on JMLR formatting requirements
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{jmlr2e}[2024/01/01 JMLR Style]
+
+% Page layout
+\usepackage[margin=1in]{geometry}
+\usepackage{natbib}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% Fonts
+\usepackage{times}
+\usepackage{mathptmx}
+
+% Headers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[RE]{\textit{\@ShortHeadings}}
+\fancyhead[LO]{\textit{\@ShortAuthors}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Short headings storage
+\def\@ShortHeadings{}
+\def\@ShortAuthors{}
+\newcommand{\ShortHeadings}[2]{%
+  \def\@ShortHeadings{#1}%
+  \def\@ShortAuthors{#2}%
+}
+
+% First page number
+\newcommand{\firstpageno}[1]{\setcounter{page}{#1}}
+
+% Author formatting
+\newcommand{\name}[1]{\textbf{#1}\\}
+\newcommand{\email}[1]{\texttt{#1}\\}
+\newcommand{\addr}[1]{#1\\}
+
+% Editor
+\newcommand{\editor}[1]{\def\@editor{#1}}
+\def\@editor{}
+
+% Keywords environment
+\newenvironment{keywords}{%
+  \vspace{0.5em}%
+  \noindent\textbf{Keywords:} 
+}{\vspace{1em}}
+
+% Abstract formatting
+\renewenvironment{abstract}{%
+  \begin{center}%
+    \textbf{Abstract}%
+  \end{center}%
+  \begin{quotation}%
+}{%
+  \end{quotation}%
+}
+
+% Section formatting
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{0.5em}{}
+
+% Title page
+\renewcommand{\maketitle}{%
+  \begin{center}%
+    {\LARGE\bfseries \@title \par}%
+    \vspace{1em}%
+    {\large \@author \par}%
+    \vspace{0.5em}%
+    \ifx\@editor\empty\else%
+      {\small Editor: \@editor \par}%
+    \fi%
+  \end{center}%
+  \vspace{1em}%
+}
+
+% Bibliography style note
+% Use \bibliographystyle{plainnat} in main document
+
+\endinput

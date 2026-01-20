@@ -6,12 +6,6 @@ A complete implementation of GraphRAG that combines **semantic vector search** w
 
 ---
 
-## 🎨 How It Works
-
-![Beyond RAG: How Knowledge Graphs Make AI Answers 10x More Reliable](assets/GraphRAG.png)
-
----
-
 ## 📸 Screenshot
 
 <!-- Add your UI screenshot here -->
