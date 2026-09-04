@@ -1,6 +1,9 @@
 import { ChatOllama } from '@langchain/ollama';
 import { config } from '../../config.js';
 
+// How many chunks to process in parallel during entity extraction
+const EXTRACTION_CONCURRENCY = 4;
+
 /**
  * Create Ollama chat model for entity extraction
  */
@@ -8,9 +11,9 @@ export function createExtractionModel() {
   return new ChatOllama({
     model: config.ollama.model,
     baseUrl: config.ollama.baseUrl,
-    temperature: 0, // Low temperature for consistent extraction
-    format: 'json', // Request JSON output
-    timeout: 60000, // 60 second timeout for Ollama itself
+    temperature: 0,  // Low temperature for consistent extraction
+    format: 'json',  // Request JSON output
+    timeout: 60000,  // 60 second timeout
   });
 }
 
@@ -20,7 +23,6 @@ export function createExtractionModel() {
  * @returns {string} Formatted prompt
  */
 export function createExtractionPrompt(text) {
-  // Simplified, shorter prompt for faster processing
   return `Extract entities and relationships from this text as JSON.
 
 Entity types: Person, Company, Product, Field
@@ -36,29 +38,30 @@ JSON:`;
 }
 
 /**
- * Extract entities and relationships from text using Ollama
+ * Extract entities and relationships from a single text chunk using Ollama.
  * @param {string} text - Text to analyze
- * @param {number} timeout - Timeout in milliseconds
+ * @param {number} timeout - Per-chunk timeout in ms
  * @returns {Promise<Object>} Extracted entities and relationships
  */
 export async function extractEntitiesAndRelationships(text, timeout = 45000) {
   const model = createExtractionModel();
   const prompt = createExtractionPrompt(text);
+  const controller = new AbortController();
+  let timeoutId;
 
   try {
-    // Add timeout protection
-    const extractionPromise = model.invoke(prompt);
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Extraction timeout')), timeout)
+    const extractionPromise = model.invoke(prompt, { signal: controller.signal });
+    const timeoutPromise = new Promise((_, reject) =>
+      timeoutId = setTimeout(() => {
+        controller.abort();
+        reject(new Error('Extraction timeout'));
+      }, timeout)
     );
-    
+
     const response = await Promise.race([extractionPromise, timeoutPromise]);
-    
-    // Parse JSON response
     const content = response.content;
     const extraction = JSON.parse(content);
 
-    // Validate structure
     if (!extraction.entities || !Array.isArray(extraction.entities)) {
       extraction.entities = [];
     }
@@ -68,64 +71,71 @@ export async function extractEntitiesAndRelationships(text, timeout = 45000) {
 
     return extraction;
   } catch (error) {
-    console.error('Error extracting entities:', error.message);
-    // Return empty extraction on error
+    // Return empty extraction on error so the pipeline continues
     return {
       entities: [],
       relationships: [],
       error: error.message,
     };
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
 /**
- * Extract entities from multiple chunks in batch
- * @param {Array} chunks - Array of chunk objects with text
- * @returns {Promise<Array>} Chunks with extractions added
+ * Extract entities from multiple chunks using controlled parallelism.
+ * Runs EXTRACTION_CONCURRENCY chunks at a time instead of one-by-one,
+ * which gives a significant speedup on multi-core machines.
+ *
+ * @param {Array} chunks - Array of chunk objects with a `text` field
+ * @returns {Promise<Array>} Chunks with `extraction` field added
  */
 export async function extractFromChunks(chunks) {
-  console.log(`\n🔍 Extracting entities from ${chunks.length} chunks...`);
-  
-  const chunksWithExtractions = [];
+  console.log(`\n🔍 Extracting entities from ${chunks.length} chunks (concurrency ${EXTRACTION_CONCURRENCY})...`);
+
+  const total = chunks.length;
+  let processed = 0;
   let totalEntities = 0;
   let totalRelationships = 0;
-  let processed = 0;
   let errors = 0;
 
-  for (const chunk of chunks) {
-    try {
-      // Progress indicator before processing
-      process.stdout.write(`\r  Processing: ${processed + 1}/${chunks.length} chunks...`);
-      
-      const extraction = await extractEntitiesAndRelationships(chunk.text, 45000); // 45s timeout per chunk
-      
-      chunksWithExtractions.push({
-        ...chunk,
-        extraction,
-      });
+  const results = new Array(total);
 
-      totalEntities += extraction.entities?.length || 0;
-      totalRelationships += extraction.relationships?.length || 0;
+  // Process chunks in parallel windows of EXTRACTION_CONCURRENCY
+  for (let i = 0; i < total; i += EXTRACTION_CONCURRENCY) {
+    const window = chunks.slice(i, i + EXTRACTION_CONCURRENCY);
+
+    const settled = await Promise.allSettled(
+      window.map(chunk => extractEntitiesAndRelationships(chunk.text, 45000))
+    );
+
+    for (let j = 0; j < window.length; j++) {
+      const chunk = window[j];
+      const outcome = settled[j];
       processed++;
 
-      // Detailed progress every chunk
-      if (extraction.entities?.length > 0 || extraction.relationships?.length > 0) {
-        process.stdout.write(`\r  ✓ ${processed}/${chunks.length} | Entities: ${totalEntities} | Relations: ${totalRelationships} | Errors: ${errors}    \n`);
+      if (outcome.status === 'fulfilled') {
+        const extraction = outcome.value;
+        results[i + j] = { ...chunk, extraction };
+        totalEntities += extraction.entities?.length ?? 0;
+        totalRelationships += extraction.relationships?.length ?? 0;
+        if (extraction.error) errors++;
+      } else {
+        errors++;
+        results[i + j] = {
+          ...chunk,
+          extraction: { entities: [], relationships: [], error: outcome.reason?.message },
+        };
       }
-    } catch (error) {
-      errors++;
-      process.stdout.write(`\r  ✗ Error at ${processed + 1}/${chunks.length}: ${error.message}    \n`);
-      chunksWithExtractions.push({
-        ...chunk,
-        extraction: { entities: [], relationships: [], error: error.message },
-      });
-      processed++;
     }
+
+    process.stdout.write(
+      `\r  ✓ ${processed}/${total} | Entities: ${totalEntities} | Relations: ${totalRelationships} | Errors: ${errors}    `
+    );
   }
 
   console.log(`\n✅ Extraction complete: ${totalEntities} entities, ${totalRelationships} relationships (${errors} errors)\n`);
-
-  return chunksWithExtractions;
+  return results;
 }
 
 /**
@@ -138,13 +148,11 @@ export function validateExtraction(extraction) {
   if (!Array.isArray(extraction.entities)) return false;
   if (!Array.isArray(extraction.relationships)) return false;
 
-  // Validate entities
   for (const entity of extraction.entities) {
     if (!entity.name || !entity.type) return false;
     if (!['Person', 'Company', 'Product', 'Field'].includes(entity.type)) return false;
   }
 
-  // Validate relationships
   for (const rel of extraction.relationships) {
     if (!rel.from || !rel.to || !rel.type) return false;
     if (!rel.from_type || !rel.to_type) return false;

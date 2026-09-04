@@ -16,17 +16,19 @@ All components are installed and configured:
 
 ### Option 1: Using the Web UI (Recommended)
 
-**Terminal 1 - Start API Server:**
+**One command - full startup:**
 ```bash
-npm run api
-```
-
-**Terminal 2 - Start Web UI:**
-```bash
-npm run ui
+npm run start
 ```
 
 Then open http://localhost:5173 in your browser.
+
+If you want to run them separately:
+
+```bash
+npm run api
+npm run ui
+```
 
 ### Option 2: Using CLI
 

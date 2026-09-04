@@ -148,8 +148,12 @@ export async function createFieldNode(name, properties = {}) {
 export async function createRelationship(fromType, fromName, relType, toType, toName, properties = {}) {
   const session = getSession();
   try {
+    if (!fromType || !fromName || !relType || !toType || !toName) {
+      throw new Error(`Invalid relationship payload: ${JSON.stringify({ fromType, fromName, relType, toType, toName })}`);
+    }
+
     // Sanitize labels and relationship types to ensure they're valid
-    const sanitizeLabel = (label) => label.replace(/[^a-zA-Z0-9_]/g, '_');
+    const sanitizeLabel = (label) => String(label).replace(/[^a-zA-Z0-9_]/g, '_');
     const fromLabel = sanitizeLabel(fromType);
     const toLabel = sanitizeLabel(toType);
     const relLabel = sanitizeLabel(relType);
@@ -191,6 +195,10 @@ export async function storeExtraction(extraction, chunkId, docId) {
   // Store entities
   if (extraction.entities) {
     for (const entity of extraction.entities) {
+      if (!entity?.name || !entity?.type) {
+        continue;
+      }
+
       const props = { ...provenance };
       
       switch (entity.type) {
@@ -214,6 +222,10 @@ export async function storeExtraction(extraction, chunkId, docId) {
   // Store relationships
   if (extraction.relationships) {
     for (const rel of extraction.relationships) {
+      if (!rel?.from || !rel?.to || !rel?.type || !rel?.from_type || !rel?.to_type) {
+        continue;
+      }
+
       await createRelationship(
         rel.from_type,
         rel.from,

@@ -21,7 +21,7 @@ console.log('=' .repeat(70));
 console.log('\n🎯 Target Configuration:\n');
 console.log(`  Database: ${config.mongodb.database}`);
 console.log(`  Collection: ${config.mongodb.collection}`);
-console.log(`  Index Name: vector_index`);
+console.log(`  Index Name: ${config.mongodb.vectorIndexName}`);
 console.log(`  Vector Dimensions: ${config.vectorSearch.dimensions}`);
 console.log(`  Similarity: cosine`);
 

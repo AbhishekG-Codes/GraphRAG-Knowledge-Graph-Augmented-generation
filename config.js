@@ -4,7 +4,7 @@ export const config = {
   // Ollama Configuration
   ollama: {
     baseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
-    model: process.env.OLLAMA_MODEL || 'qwen2.5:7b',
+    model: process.env.OLLAMA_MODEL || 'llama3.1:8b',
     embeddingModel: process.env.OLLAMA_EMBEDDING_MODEL || 'nomic-embed-text',
   },
 
@@ -13,6 +13,7 @@ export const config = {
     uri: process.env.MONGODB_URI,
     database: process.env.MONGODB_DATABASE || 'graphrag',
     collection: process.env.MONGODB_COLLECTION || 'document_chunks',
+    vectorIndexName: process.env.MONGODB_VECTOR_INDEX_NAME || 'langgraph_vector_index',
   },
 
   // Neo4j Configuration
@@ -25,8 +26,8 @@ export const config = {
   // Vector Search Configuration
   vectorSearch: {
     dimensions: parseInt(process.env.VECTOR_DIMENSIONS) || 768,
-    chunkSize: parseInt(process.env.CHUNK_SIZE) || 500,
-    chunkOverlap: parseInt(process.env.CHUNK_OVERLAP) || 50,
+    chunkSize: parseInt(process.env.CHUNK_SIZE) || 1200,
+    chunkOverlap: parseInt(process.env.CHUNK_OVERLAP) || 100,
     topK: parseInt(process.env.TOP_K_RESULTS) || 5,
     graphTraversalDepth: parseInt(process.env.GRAPH_TRAVERSAL_DEPTH) || 2,
   },

@@ -22,3 +22,5 @@ data/
 # Build output
 dist/
 build/
+
+.github/

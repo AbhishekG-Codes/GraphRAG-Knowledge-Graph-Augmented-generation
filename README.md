@@ -202,17 +202,14 @@ OLLAMA_LLM_MODEL=qwen2.5:7b
 ### Running the Pipeline
 
 ```bash
-# Step 1: Ingest PDFs (one-time)
+# One-command start: ingest (if needed), build graph (if needed), start API + UI
+npm run start
+
+# Optional manual commands
 npm run ingest
-
-# Step 2: Build knowledge graph (one-time)
 npm run build-graph
-
-# Step 3: Start API server
 npm run api
-
-# Step 4: Start UI (new terminal)
-cd ui && npm run dev
+npm run ui
 ```
 
 Open http://localhost:5173 to explore!

@@ -1,6 +1,3 @@
-/**
- * Simple Express API server for GraphRAG UI
- */
 
 import express from 'express';
 import cors from 'cors';

@@ -88,7 +88,7 @@ export async function insertChunks(chunks) {
  */
 export function getVectorSearchIndexDefinition() {
   return {
-    name: 'vector_index',
+    name: config.mongodb.vectorIndexName,
     type: 'vectorSearch',
     definition: {
       fields: [
@@ -125,7 +125,7 @@ export async function vectorSearch(queryEmbedding, limit = null, filter = {}) {
   const pipeline = [
     {
       $vectorSearch: {
-        index: 'langgraph_vector_index',
+        index: config.mongodb.vectorIndexName,
         path: 'embedding',
         queryVector: queryEmbedding,
         numCandidates: k * 10,
@@ -148,6 +148,66 @@ export async function vectorSearch(queryEmbedding, limit = null, filter = {}) {
 
   const results = await collection.aggregate(pipeline).toArray();
   return results;
+}
+
+/**
+ * Fallback keyword search for cases where vector retrieval returns nothing.
+ * This is intentionally simple and favors source titles and obvious text matches.
+ * @param {string} query - User query
+ * @param {number} limit - Number of results to return
+ * @returns {Promise<Array>} Search results
+ */
+export async function keywordSearch(query, limit = null) {
+  const collection = getCollection();
+  const k = limit || config.vectorSearch.topK;
+  const tokens = Array.from(
+    new Set((query.toLowerCase().match(/[a-z0-9]+/g) || []).filter(token => token.length > 2))
+  ).slice(0, 8);
+
+  if (tokens.length === 0) {
+    return [];
+  }
+
+  const orClauses = tokens.flatMap(token => [
+    { text: { $regex: token, $options: 'i' } },
+    { source_title: { $regex: token, $options: 'i' } },
+  ]);
+
+  const candidates = await collection
+    .find({ $or: orClauses })
+    .limit(k * 5)
+    .project({
+      _id: 0,
+      chunk_id: 1,
+      doc_id: 1,
+      source_title: 1,
+      text: 1,
+      page_number: 1,
+    })
+    .toArray();
+
+  return candidates
+    .map(chunk => {
+      const haystack = `${chunk.source_title || ''} ${chunk.text || ''}`.toLowerCase();
+      const matchCount = tokens.reduce((count, token) => count + (haystack.includes(token) ? 1 : 0), 0);
+
+      return {
+        ...chunk,
+        score: matchCount / tokens.length,
+        retrieval_method: 'keyword_fallback',
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, k);
+}
+
+/**
+ * Get the source titles that have already been ingested.
+ * @returns {Promise<string[]>} Source document titles
+ */
+export async function getIngestedSourceTitles() {
+  const collection = getCollection();
+  return await collection.distinct('source_title');
 }
 
 /**

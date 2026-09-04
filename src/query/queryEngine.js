@@ -12,7 +12,7 @@ function createAnswerModel() {
   return new ChatOllama({
     model: config.ollama.model,
     baseUrl: config.ollama.baseUrl,
-    temperature: 0.3,
+    temperature: 0,
     timeout: 180000, // 180 second timeout
     numPredict: 300, // Shorter responses
   });
@@ -60,8 +60,8 @@ export async function queryGraphRAG(query, options = {}) {
     // Step 3: Construct graph-aware prompt
     if (verbose) console.log('\n6️⃣  Constructing graph-aware prompt...');
     const prompt = constructGraphAwarePrompt(query, retrievalResults, {
-      maxChunks: 2, // Ultra minimal to prevent timeout
-      maxGraphPaths: 3, // Very few graph paths
+      maxChunks: 5,       // Show up to 5 chunks — enough for multi-doc answers
+      maxGraphPaths: 5,
       includeGraphPaths: graphDepth > 0,
       includeProvenance: false,
     });
@@ -81,7 +81,9 @@ export async function queryGraphRAG(query, options = {}) {
     }
 
     // Step 5: Extract citations
-    const citations = extractCitations(retrievalResults.allChunks);
+    // Citations must match the chunks included in the LLM prompt, not every
+    // graph-expanded chunk fetched during retrieval.
+    const citations = extractCitations(retrievalResults.allChunks.slice(0, 5));
 
     if (verbose) {
       console.log('\n' + '=' .repeat(60));

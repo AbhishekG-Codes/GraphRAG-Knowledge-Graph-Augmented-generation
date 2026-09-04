@@ -21,7 +21,10 @@ export function constructGraphAwarePrompt(query, retrievalResults, options = {})
   // Select top chunks
   const selectedChunks = allChunks.slice(0, maxChunks);
 
-  let prompt = `Answer using ONLY the information below. Be concise.
+  let prompt = `Answer the question directly using ONLY the information below.
+Do not describe the retrieval system, knowledge graph, documents, or context.
+For a "who" question, identify the person and their relevant role or work when supported.
+If the information is insufficient, say so plainly. Be concise.
 
 `;
 

@@ -4,7 +4,9 @@
   "scripts": {
     "api": "node api-server.js",
     "ui": "cd ui && npm run dev",
-    "start": "echo 'Run: npm run api (in one terminal) and npm run ui (in another)'"
+    "ingest": "node ingest-pdfs.js",
+    "build-graph": "node extract-entities.js --all",
+    "start": "node scripts/start.js"
   },
   "dependencies": {
     "@langchain/core": "^1.1.7",
